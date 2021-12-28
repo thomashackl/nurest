@@ -221,6 +221,8 @@ class nuLigaClient
                 'scope' => nuLigaClient::SCOPE
             ];
 
+            $auth = $this->request('/rs/auth/token', 'POST', [], $body, $headers, false);
+
         } else {
 
             $body = [
@@ -231,9 +233,14 @@ class nuLigaClient
                 'scope' => nuLigaClient::SCOPE
             ];
 
-        }
+            try {
+                $auth = $this->request('/rs/auth/token', 'POST', [], $body, $headers, false);
+            // Available refresh token has failed, generate new tokens.
+            } catch (Exception $e) {
+                return $this->refreshTokensFromAPI();
+            }
 
-        $auth = $this->request('/rs/auth/token', 'POST', [], $body, $headers, false);
+        }
 
         // Obtained a new token set.
         if ($auth['access_token'] && $auth['refresh_token']) {
